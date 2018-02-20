@@ -3,6 +3,9 @@ import './RunningLayout.css';
 import { debug } from "util";
 import { getRandomInt } from "../../../services/randomService.js";
 import update from 'immutability-helper';
+import Catcher from './models/Catcher.js';
+import Barrier from './models/Barrier.js';
+import sides from './models/Sides.js';
 
 export default class RunningLayout extends React.Component {
 
@@ -10,27 +13,35 @@ export default class RunningLayout extends React.Component {
         super(props);
 
         this.maxBarriers = 8;
+        this.maxBarriersPerSide = 4;
+
+        const catcher = new Catcher();
+
+        this.helper = new barriersHelper(catcher);
+        const barriers = this.helper.initBarriers(this.maxBarriers);
+
         this.state = {
             startGame: false,
-            barriers: this.initBarriers(),
-            catcher: new Catcher(),
-            maxBariersPerSide: 5,
-        }; //Initialize state
-
-        this.helper = new barriersHelper(this.state.barriers, this.state.catcher);
+            barriers: barriers,
+            catcher: catcher,
+        };
 
         this.windowWidth = window.innerWidth;
         this.windowHeight = window.innerHeight;
     }
 
-    componentWillUpdate(nextProps, nextState){
-        this.helper = new barriersHelper(nextState.barriers, nextState.catcher);
-    }
-
     startGame(){
+        this.helper.setBarriers(
+            this.windowHeight,
+            (newBarriers) => {
+                this.setState({barriers: newBarriers});
+        },
+        () => {
+            //clear bariers and catcher if endGame
+            this.endGame();
+        });
 
-        this.setGameBarriers(this.helper);
-        this.helper.startGame(this.windowHeight);
+        this.helper.setCatcher(this.windowHeight);
 
         this.setState({ 
             startGame: true
@@ -41,35 +52,16 @@ export default class RunningLayout extends React.Component {
         var newCatcher = this.state.catcher;
         newCatcher.visible = false;
         newCatcher.calculateStyle();
+        this.helper.clearIntervals();
 
-        //this.helper.clearIntervals();
-        var barriers = this.initBarriers();
+        this.helper = new barriersHelper(newCatcher);
+        var barriers = this.helper.initBarriers(this.maxBarriers);
         
         this.setState({
              barriers: barriers,
              startGame: false, 
              catcher: newCatcher, 
              });
-    }
-
-    setGameBarriers() {
-        this.helper.setBarriers(
-            this.windowHeight,
-            (newBarriers) => {
-                this.setState({barriers: newBarriers});
-        },
-        () => {
-            //clear bariers and catcher if endGame
-            this.endGame();
-        });
-    }
-
-    initBarriers() {
-        let barriers = [];
-        for (let i = 0; i < this.maxBarriers; i++) {
-            barriers.push(new Barrier(i));
-        }
-        return barriers;
     }
 
     checkGameEnd(){
@@ -96,8 +88,9 @@ export default class RunningLayout extends React.Component {
     }
 
     render() {
+        let style = this.state.startGame ? {cursor: "none"}: null;
         return (
-            <div className="inner-game-container" onMouseMove={(e) => this.mouseMove(e)}>
+            <div className="inner-game-container" style={style} onMouseMove={(e) => this.mouseMove(e)}>
                 {
                     !this.state.startGame ?
                         <div className="start-game-containier">
@@ -118,115 +111,14 @@ export default class RunningLayout extends React.Component {
     }
 }
 
-const sides = {
-    LEFT: 0,
-    RIGHT: 1,
-}
-
-
-
-class Barrier {
-    constructor(index) {
-        this.topPosition = 0;
-        this.side = sides.LEFT;
-        this.key = index;
-        this.width = 0;
-        this.visible = false;
-        this.style = "";
-
-        this.setRandomSideAndWidth();
-        this.calculateStyle();
-    }
-
-    getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    setRandomSideAndWidth() {
-        this.width = this.getRandomInt(50, 400);
-        
-        this.side = this.getRandomInt(0, 1);
-    }
-
-    calculateStyle() {
-        var barrierStyle = {};
-
-        this.setSidePosition(this, barrierStyle);
-
-        barrierStyle.top = this.topPosition
-        barrierStyle.width = this.width;
-
-        if (this.visible === false) {
-            barrierStyle.display = 'none';
-        }
-        else {
-            barrierStyle.display = 'initial';
-        }
-
-        this.style = barrierStyle;
-    }
-
-    setSidePosition(barrier, barrierStyle) {
-        switch (barrier.side) {
-            case sides.LEFT:
-                barrierStyle.left = 0;
-                break;
-            case sides.RIGHT:
-                barrierStyle.right = 0;
-                break;
-        }
-    }
-}
-
-
-class Catcher {
-    constructor(index) {
-        this.visible = false;
-        this.style = "";
-        
-        this.left = 0;
-        this.top = 0;
-
-        this.calculateStyle();
-    }
-
-
-
-    calculateStyle() {
-        var catcherStyle = {};
-
-        catcherStyle.top = this.top;
-        catcherStyle.left = this.left;
-
-        if (this.visible === false) {
-            catcherStyle.display = 'none';
-        }
-        else {
-            catcherStyle.display = 'initial';
-        }
-
-        this.style = catcherStyle;
-    }
-
-    setSidePosition(barrier, barrierStyle) {
-        switch (barrier.side) {
-            case sides.LEFT:
-                barrierStyle.left = 0;
-                break;
-            case sides.RIGHT:
-                barrierStyle.right = 0;
-                break;
-        }
-    }
-}
-
-function barriersHelper(barriers, catcher){
-    this.barriers = barriers;
+function barriersHelper(catcher){
+    this.barriers = null;
     this.catcher = catcher;
     this.intervals = [];
     this.timeouts = [];
+    this.maxBarPerSide = 6;
 
-    this.startGame = function(innerHeight){
+    this.setCatcher = function(innerHeight){
         var catcher = this.catcher;
         catcher.visible = true;
         catcher.top = innerHeight - 100;
@@ -256,6 +148,15 @@ function barriersHelper(barriers, catcher){
         }
     }
 
+    this.initBarriers = function(maxBarriers) {
+        let barriers = [];
+        for (let i = 0; i < maxBarriers; i++) {
+            barriers.push(new Barrier(i));
+        }
+        this.barriers = barriers;
+        return barriers;
+    }
+
     this.setBarriers = function(windowHeight, setBarrierState, gameIsEnd){
         let barriers = this.barriers;
 
@@ -279,7 +180,21 @@ function barriersHelper(barriers, catcher){
 
             if (barrier.topPosition > windowHeight - 60) {
                 barrier.topPosition = 0;
-                barrier.setRandomSideAndWidth();
+
+                let bars = this.barriers;
+
+                let leftCount = this.barriers.filter((bar) => bar.side===sides.LEFT).length;
+                let rightCount = this.barriers.filter((bar) => bar.side===sides.RIGHT).length;
+
+                barrier.setRandomSideAndWidth()
+                
+                if(leftCount >= this.maxBarPerSide)
+                {
+                    barrier.side = sides.RIGHT;
+                }
+                else if(rightCount >= this.maxBarPerSide){
+                    barrier.side = sides.LEFT;
+                }
             }
             else {
                 barrier.topPosition = barrier.topPosition + 20;
@@ -288,12 +203,13 @@ function barriersHelper(barriers, catcher){
             
             //callback
             setBarrierState(this.barriers);
-        }, 100);
+        }, 50);
 
         this.intervals.push(interval);
     }
 
     this.clearIntervals = function(){
+        debugger;
         for (let i = 0; i < this.timeouts.length; i++) {
             clearTimeout(this.timeouts[i]);
         }
