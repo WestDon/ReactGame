@@ -1,0 +1,32 @@
+.start-game-containier{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    height: 300px;
+    padding-top: 40px;
+    background: lavenderblush;
+}
+
+.glyphicon.glyphicon-thumbs-up.start{
+    margin-right: 10px;
+}
+
+.score{
+    font-size: 24px;
+    margin-top: 10px;
+}
+
+.score-text{
+    color: darkblue
+}
+
+.score-result{
+    margin-left: 5px;
+    color: brown;
+}

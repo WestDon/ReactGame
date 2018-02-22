@@ -1,5 +1,6 @@
 const ActionTypes = { 
-    ADD_TEST: "ADD_TEST",
+    ADD_MAX: "ADD_MAX",
+    GET_MAX: "GET_MAX"
 };
  
 export default ActionTypes;

@@ -10,15 +10,13 @@ class PhonesStore extends ReduceStore{
     }
     getInitialState() {
         //set initial state
-        return {obj: 123};
+        return {maxScore: 0};
     }
  
     reduce(state, action) {
         switch (action.type) {
-            case ActionTypes.ADD_TEST:
-                //return new state
-                //var stateNew = {...state, objList: state.objList};
-                return {...state};
+            case ActionTypes.GET_MAX:
+                return {...state, maxScore: +action.maxValue};
 
             default:
                 return state;

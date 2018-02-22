@@ -1,0 +1,8 @@
+.timer-container{
+    width: 200px;
+    float: right;
+    height: 50px;
+    text-align: center;
+    color: firebrick;
+    font-size: 32px;
+}

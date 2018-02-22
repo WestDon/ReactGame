@@ -13,12 +13,12 @@ class AppContainer extends React.Component
     static calculateState(prevState) { 
         return { 
             currentState: AppStore.getState(),
-            onTest: Actions.addTest
+            addMaxValue: Actions.addMaxValue,
         }; 
     }
     //Set Store state or actions to props if needed 
-    render() { 
-        return <RunningApp />; 
+    render() {
+        return <RunningApp maxScore={this.state.currentState.maxScore} />; 
     } 
 } 
 export default Container.create(AppContainer);

@@ -6,6 +6,9 @@ import update from 'immutability-helper';
 import Catcher from './models/Catcher.js';
 import Barrier from './models/Barrier.js';
 import sides from './models/Sides.js';
+import Starter from './Starter/Starter.jsx';
+import Timer from './Timer/Timer.jsx';
+import Actions from '../../../data/Actions.js';
 
 export default class RunningLayout extends React.Component {
 
@@ -17,91 +20,117 @@ export default class RunningLayout extends React.Component {
 
         const catcher = new Catcher();
 
-        this.helper = new barriersHelper(catcher);
+        this.helper = this.getNewBarierHelper(catcher, this.maxBarriersPerSide);
         const barriers = this.helper.initBarriers(this.maxBarriers);
 
         this.state = {
             startGame: false,
             barriers: barriers,
             catcher: catcher,
+            maxScore: 0,
         };
 
         this.windowWidth = window.innerWidth;
         this.windowHeight = window.innerHeight;
     }
 
-    startGame(){
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.maxScore != this.props.maxScore) {
+        }
+    }
+
+    componentDidMount() {
+        Actions.getMaxValue();
+    }
+
+    startGame() {
         this.helper.setBarriers(
             this.windowHeight,
             (newBarriers) => {
-                this.setState({barriers: newBarriers});
-        },
-        () => {
-            //clear bariers and catcher if endGame
-            this.endGame();
-        });
+                this.setState({ barriers: newBarriers });
+            },
+            () => {
+                //clear bariers and catcher if endGame
+                this.endGame();
+            });
 
         this.helper.setCatcher(this.windowHeight);
 
-        this.setState({ 
+        this.setState({
             startGame: true
         });
     }
 
-    endGame(){
+    endGame() {
         var newCatcher = this.state.catcher;
         newCatcher.visible = false;
         newCatcher.calculateStyle();
         this.helper.clearIntervals();
 
-        this.helper = new barriersHelper(newCatcher);
+        this.helper = this.getNewBarierHelper(newCatcher, this.maxBarriers);
         var barriers = this.helper.initBarriers(this.maxBarriers);
-        
+
         this.setState({
-             barriers: barriers,
-             startGame: false, 
-             catcher: newCatcher, 
-             });
+            barriers: barriers,
+            startGame: false,
+            catcher: newCatcher,
+        });
     }
 
-    checkGameEnd(){
-        if(this.helper.checkGameEnd()){
+    checkGameEnd() {
+        if (this.helper.checkGameEnd()) {
             this.endGame();
         }
     }
 
     mouseMove(e) {
-        if(this.state.startGame){
+        if (this.state.startGame) {
             var x = e.clientX - e.currentTarget.offsetLeft;
             var y = e.clientY - e.currentTarget.offsetTop;
 
             this.checkGameEnd();
 
             // 760 - game container width 
-            if(x <= (760 - 40)) {
+            if (x <= (760 - 40)) {
                 this.state.catcher.left = x;
                 this.state.catcher.top = y;
                 this.state.catcher.calculateStyle();
-                this.setState({catcher: this.state.catcher});
+                this.setState({ catcher: this.state.catcher });
             }
         }
     }
 
+    getNewBarierHelper(catcher, maxBarriers) {
+        return new barriersHelper(catcher, this.maxBarriersPerSide);
+    }
+
+    saveResult(time) {
+        if (+time > this.props.maxScore) {
+            Actions.addMaxValue(time);
+            //addOrUpdateLocalStorageValue('maxValue', time);
+        }
+    }
+
+    getStarter() {
+        if (!this.state.startGame) {
+            return <Starter maxScore={this.props.maxScore} onGameStart={() => this.startGame()} />;
+        }
+    }
+
+    getScore() {
+        return <Timer startGame={this.state.startGame} onEndTimer={(time) => this.saveResult(time)} />;
+    }
+
     render() {
-        let style = this.state.startGame ? {cursor: "none"}: null;
+        let style = this.state.startGame ? { cursor: "none" } : null;
+
         return (
             <div className="inner-game-container" style={style} onMouseMove={(e) => this.mouseMove(e)}>
                 {
-                    !this.state.startGame ?
-                        <div className="start-game-containier">
-                            <div className="start">
-                                <a className="btn btn-primary btn-lg" onClick={() => {this.startGame()}}>
-                                    <span className="glyphicon glyphicon-thumbs-up start">
-                                    </span>
-                                    Start game
-                                </a>
-                            </div>
-                        </div> : null
+                    this.getStarter()
+                }
+                {
+                    this.getScore()
                 }
                 {this.state.barriers.map((barrier) => {
                     return <div key={barrier.key} style={barrier.style} className='barrier-container'></div>
@@ -111,14 +140,15 @@ export default class RunningLayout extends React.Component {
     }
 }
 
-function barriersHelper(catcher){
+
+function barriersHelper(catcher, maxBarPerSide) {
     this.barriers = null;
     this.catcher = catcher;
     this.intervals = [];
     this.timeouts = [];
-    this.maxBarPerSide = 6;
+    this.maxBarPerSide = maxBarPerSide;
 
-    this.setCatcher = function(innerHeight){
+    this.setCatcher = function (innerHeight) {
         var catcher = this.catcher;
         catcher.visible = true;
         catcher.top = innerHeight - 100;
@@ -126,29 +156,29 @@ function barriersHelper(catcher){
         catcher.calculateStyle();
     }
 
-    this.checkGameEnd = function(){
+    this.checkGameEnd = function () {
         const catcher = this.catcher;
         const bars = this.barriers;
 
-        const cubeObj = {left: catcher.left, right: catcher.left + 40, top: catcher.top, bottom: catcher.top + 40}
+        const cubeObj = { left: catcher.left, right: catcher.left + 40, top: catcher.top, bottom: catcher.top + 40 }
 
         for (let i = 0; i < bars.length; i++) {
             let barObj = {};
             // 760 - game container width 
-            if(bars[i].side===sides.RIGHT){
-                barObj = {left: 760 - bars[i].width, right: 760, top: bars[i].topPosition, bottom: bars[i].topPosition + 40};
+            if (bars[i].side === sides.RIGHT) {
+                barObj = { left: 760 - bars[i].width, right: 760, top: bars[i].topPosition, bottom: bars[i].topPosition + 40 };
             }
-            else{
-                barObj = {left: 0, right: bars[i].width, top: bars[i].topPosition, bottom: bars[i].topPosition + 40};
+            else {
+                barObj = { left: 0, right: bars[i].width, top: bars[i].topPosition, bottom: bars[i].topPosition + 40 };
             }
 
-            if(intersectRect(cubeObj, barObj)){
+            if (intersectRect(cubeObj, barObj)) {
                 return true;
             }
         }
     }
 
-    this.initBarriers = function(maxBarriers) {
+    this.initBarriers = function (maxBarriers) {
         let barriers = [];
         for (let i = 0; i < maxBarriers; i++) {
             barriers.push(new Barrier(i));
@@ -157,7 +187,7 @@ function barriersHelper(catcher){
         return barriers;
     }
 
-    this.setBarriers = function(windowHeight, setBarrierState, gameIsEnd){
+    this.setBarriers = function (windowHeight, setBarrierState, gameIsEnd) {
         let barriers = this.barriers;
 
         for (let i = 0; i < this.barriers.length; i++) {
@@ -169,10 +199,10 @@ function barriersHelper(catcher){
         }
     }
 
-    this.setBarrier = function(barrier, setBarrierState, gameIsEnd, windowHeight){
+    this.setBarrier = function (barrier, setBarrierState, gameIsEnd, windowHeight) {
         let interval = setInterval(() => {
 
-            if(this.checkGameEnd()){
+            if (this.checkGameEnd()) {
                 this.clearIntervals();
                 gameIsEnd();
                 return;
@@ -183,16 +213,15 @@ function barriersHelper(catcher){
 
                 let bars = this.barriers;
 
-                let leftCount = this.barriers.filter((bar) => bar.side===sides.LEFT).length;
-                let rightCount = this.barriers.filter((bar) => bar.side===sides.RIGHT).length;
+                let leftCount = this.barriers.filter((bar) => bar.side === sides.LEFT).length;
+                let rightCount = this.barriers.filter((bar) => bar.side === sides.RIGHT).length;
 
                 barrier.setRandomSideAndWidth()
-                
-                if(leftCount >= this.maxBarPerSide)
-                {
+
+                if (leftCount >= this.maxBarPerSide) {
                     barrier.side = sides.RIGHT;
                 }
-                else if(rightCount >= this.maxBarPerSide){
+                else if (rightCount >= this.maxBarPerSide) {
                     barrier.side = sides.LEFT;
                 }
             }
@@ -200,7 +229,7 @@ function barriersHelper(catcher){
                 barrier.topPosition = barrier.topPosition + 20;
             }
             barrier.calculateStyle();
-            
+
             //callback
             setBarrierState(this.barriers);
         }, 50);
@@ -208,8 +237,8 @@ function barriersHelper(catcher){
         this.intervals.push(interval);
     }
 
-    this.clearIntervals = function(){
-        debugger;
+    this.clearIntervals = function () {
+
         for (let i = 0; i < this.timeouts.length; i++) {
             clearTimeout(this.timeouts[i]);
         }
@@ -220,9 +249,9 @@ function barriersHelper(catcher){
 
 
     function intersectRect(r1, r2) {
-        return !(r2.left > r1.right || 
-                 r2.right < r1.left || 
-                 r2.top > r1.bottom ||
-                 r2.bottom < r1.top);
-      }
+        return !(r2.left > r1.right ||
+            r2.right < r1.left ||
+            r2.top > r1.bottom ||
+            r2.bottom < r1.top);
+    }
 }

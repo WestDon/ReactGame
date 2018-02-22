@@ -2,7 +2,7 @@
     position: absolute;
     background:Indigo  ;
     height: 40px;
-    transition:top 0.1s linear;
+    /* transition:top 0.05s linear; */
 }
 .cube-container{
     position: absolute;
@@ -16,23 +16,4 @@
     width: 760px;
     height: 100%;
     margin: 0 auto;
-}
-
-.start-game-containier{
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    margin: auto;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 300px;
-    height: 300px;
-    padding-top: 40px;
-    background: lavenderblush;
-}
-
-.glyphicon.glyphicon-thumbs-up.start{
-    margin-right: 10px;
 }
