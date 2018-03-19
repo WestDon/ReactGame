@@ -1,5 +1,5 @@
-import ActionTypes from "./ActionTypes.js";
-import AppDispatcher from "./AppDispatcher.js";
+import ActionTypes from "./ActionTypes";
+import AppDispatcher from "./AppDispatcher";
 import {getLocalStorageValue, addOrUpdateLocalStorageValue} from '../services/localStorageService'; 
 
 const Actions = {

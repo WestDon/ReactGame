@@ -11,7 +11,7 @@ module.exports = {
     },
     devServer: {
         historyApiFallback: true,  // dev server not return  'not found'
-        port:9090,
+        port:6767,
       },
     resolve: {
         extensions: [".jsx", ".js"],
@@ -24,7 +24,7 @@ module.exports = {
     module: {
         rules: [   //загрузчик для jsx
             {
-                test: /\.jsx?$|\.js?$/, // определяем тип файлов
+                test: /\.jsx?$/, // определяем тип файлов
                 exclude: /(node_modules)/,  // исключаем из обработки папку node_modules
                 loader: "babel-loader",   // определяем загрузчик
                 options: {

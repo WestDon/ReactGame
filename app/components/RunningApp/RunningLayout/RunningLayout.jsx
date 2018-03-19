@@ -1,14 +1,14 @@
 import React from "react";
 import './RunningLayout.css';
 import { debug } from "util";
-import { getRandomInt } from "../../../services/randomService.js";
+import { getRandomInt } from "../../../services/randomService";
 import update from 'immutability-helper';
-import Catcher from './models/Catcher.js';
-import Barrier from './models/Barrier.js';
-import sides from './models/Sides.js';
-import Starter from './Starter/Starter.jsx';
-import Timer from './Timer/Timer.jsx';
-import Actions from '../../../data/Actions.js';
+import Catcher from './models/Catcher';
+import Barrier from './models/Barrier';
+import sides from './models/Sides';
+import Starter from './Starter/Starter';
+import Timer from './Timer/Timer';
+import Actions from '../../../data/Actions';
 
 export default class RunningLayout extends React.Component {
 

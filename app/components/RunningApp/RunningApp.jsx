@@ -1,5 +1,5 @@
 import React from "react";
-import RunningLayout from '../RunningApp/RunningLayout/RunningLayout.jsx';
+import RunningLayout from '../RunningApp/RunningLayout/RunningLayout';
 import './RunningApp.css';
 class RunningApp extends React.Component {
 

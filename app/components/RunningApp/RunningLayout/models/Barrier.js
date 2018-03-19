@@ -1,5 +1,5 @@
 import Sides from './Sides';
-import { getRandomInt } from '../../../../services/randomService.js';
+import { getRandomInt } from '../../../../services/randomService';
 
 export default class Barrier {
     constructor(index) {

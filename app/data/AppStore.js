@@ -1,7 +1,7 @@
 import {ReduceStore} from "flux/utils";
-import Actions from "./Actions.js";
-import ActionTypes from "./ActionTypes.js";
-import AppDispatcher from "./AppDispatcher.js";
+import Actions from "./Actions";
+import ActionTypes from "./ActionTypes";
+import AppDispatcher from "./AppDispatcher";
  
 class PhonesStore extends ReduceStore{
     constructor()
@@ -9,6 +9,7 @@ class PhonesStore extends ReduceStore{
         super(AppDispatcher);
     }
     getInitialState() {
+        
         //set initial state
         return {maxScore: 0};
     }

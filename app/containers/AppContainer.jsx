@@ -1,8 +1,8 @@
-import RunningApp from "../components/RunningApp/RunningApp.jsx";
+import RunningApp from "../components/RunningApp/RunningApp";
 import {Container} from "flux/utils";
 import React from "react";
-import AppStore from "../data/AppStore.js";
-import Actions from "../data/Actions.js";
+import AppStore from "../data/AppStore";
+import Actions from "../data/Actions";
 import "../css/app.css";
  
 class AppContainer extends React.Component 
