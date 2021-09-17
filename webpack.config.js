@@ -10,7 +10,7 @@ module.exports = {
         filename: "bundle.js"       // название создаваемого файла
     },
     devServer: {
-        historyApiFallback: true,  // dev server not return  'not found'
+        historyApiFallback: true,  /// dev server not return  'not found'
         port:6767,
       },
     resolve: {
