@@ -11,10 +11,10 @@ module.exports = {
     },
     devServer: {
         historyApiFallback: true,  /// dev server not return  'not found'
-        port:6767,
+        port:6767,,,
       },
     resolve: {
-        extensions: [".jsx", ".js"],
+        extensions: [".jsx", ".js"],++
     },
     devtool: "#eval-source-map",
     plugins: [
